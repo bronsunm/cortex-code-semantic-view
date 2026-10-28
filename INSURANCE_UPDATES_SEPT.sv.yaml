@@ -1,0 +1,84 @@
+name: INSURANCE_UPDATES_SEPT
+description: Insurance claims analysis by vehicle. Claims are NZD, PERIOD is YYYYMM.
+tables:
+  - name: CLAIMS
+    description: Insurance claims with type, cost, severity and status.
+    base_table:
+      database: DEV_DEMO_INSURANCE_SI
+      schema: CUSTOMER_360
+      table: FACT_CLAIMS
+    dimensions:
+      - name: CLAIM_TYPE
+        expr: CLAIM_TYPE
+        data_type: VARCHAR
+        description: Type of claim such as Collision or Theft.
+      - name: CLAIM_SEVERITY
+        expr: CLAIM_SEVERITY
+        data_type: VARCHAR
+        description: Severity band of the claim.
+      - name: CLAIM_STATUS
+        expr: CLAIM_STATUS
+        data_type: VARCHAR
+        description: Open, Closed or Under Review.
+      - name: PRODUCT_TYPE
+        expr: PRODUCT_TYPE
+        data_type: VARCHAR
+        description: Home, Contents or Motor.
+      - name: CLAIM_VEHICLE_ID
+        expr: VEHICLE_ID
+        data_type: NUMBER
+      - name: PERIOD
+        expr: PERIOD
+        data_type: NUMBER
+        description: Claim month in YYYYMM format.
+    facts:
+      - name: CLAIM_COST
+        expr: CLAIM_COST
+        data_type: NUMBER
+        description: Claim cost in NZD.
+      - name: LARGE_CLAIM_FLAG
+        expr: LARGE_CLAIM_FLAG
+        data_type: NUMBER
+    metrics:
+      - name: CLAIM_COUNT
+        expr: COUNT(*)
+        description: Number of claims.
+      - name: TOTAL_CLAIM_COST
+        expr: SUM(CLAIMS.CLAIM_COST)
+        description: Total claim cost in NZD.
+      - name: AVG_CLAIM_COST
+        expr: AVG(CLAIMS.CLAIM_COST)
+        description: Average cost per claim.
+  - name: VEHICLES
+    description: Vehicle reference data.
+    base_table:
+      database: DEV_DEMO_INSURANCE_SI
+      schema: CUSTOMER_360
+      table: DIM_VEHICLE
+    primary_key:
+      columns:
+        - VEHICLE_ID
+    dimensions:
+      - name: VEHICLE_ID
+        expr: VEHICLE_ID
+        data_type: NUMBER
+      - name: VEHICLE_MAKE
+        expr: VEHICLE_MAKE
+        data_type: VARCHAR
+      - name: VEHICLE_MODEL
+        expr: VEHICLE_MODEL
+        data_type: VARCHAR
+      - name: VEHICLE_YEAR
+        expr: VEHICLE_YEAR
+        data_type: NUMBER
+      - name: VEHICLE_CATEGORY
+        expr: VEHICLE_CATEGORY
+        data_type: VARCHAR
+        description: Sedan, SUV, Ute or Hatchback.
+relationships:
+  - name: CLAIMS_TO_VEHICLES
+    left_table: CLAIMS
+    right_table: VEHICLES
+    relationship_columns:
+      - left_column: CLAIM_VEHICLE_ID
+        right_column: VEHICLE_ID
